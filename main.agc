@@ -3,11 +3,11 @@ SetErrorMode(2)
 
 // Propriedades da janela
 SetWindowTitle( "Girassol Defensor" )
-SetWindowSize( 1024, 768, 0 )
+SetWindowSize( 1024, 1080, 0 )
 SetWindowAllowResize( 0 )
 
 // Propriedades de tela
-SetVirtualResolution( 1024, 768 )
+SetVirtualResolution( 1024, 1080 )
 SetSyncRate( 60, 0 )
 SetScissor( 0,0,0,0 )
 UseNewDefaultFonts( 1 )
@@ -80,14 +80,17 @@ load_assets:
 //volume para a música e os sons
     SetMusicFileVolume(id_musica_fundo, 20)
     
-//imagem de fundo
+//imagem de fundo e tutorial
     id_background = CreateSprite(LoadImage("background.png"))
     SetSpritePosition(id_background, 0, 0)
     SetSpriteDepth(id_background, 100) // Coloca o fundo bem atrás
 
+	id_logo_tutorial = CreateSprite(LoadImage("tutorial.png"))
+    SetSpritePosition(id_logo_tutorial, GetVirtualWidth()/2 - GetSpriteWidth(id_logo_tutorial)/2, -100)
+    
 //imagem do girassol
-    id_girassol = CreateSprite(LoadImage("girassol.png"))
-    SetSpriteVisible(id_girassol, 0) // Começa invisível
+    id_girassol = CreateSprite(LoadImage("girassol1.png"))
+    SetSpriteVisible(id_girassol, 0)
 
 //imagens da abelha e cria os sprites
     frame1 = LoadImage("Abelhadireita1.png")
@@ -126,11 +129,16 @@ load_assets:
 
     id_texto_sair = CreateText("Sair")
     SetTextFont(id_texto_sair, id_fonte_jogo)
-    SetTextSize(id_texto_sair, 30)
+    SetTextSize(id_texto_sair, 40)
     SetTextColor(id_texto_sair, 255, 171, 64, 255)
-    SetTextPosition(id_texto_sair, GetVirtualWidth()/2 - GetTextTotalWidth(id_texto_sair)/2, 520)
+    SetTextPosition(id_texto_sair, GetVirtualWidth()/2 - GetTextTotalWidth(id_texto_sair)/2, 500)
+    
+    id_texto_tutorial = CreateText("Tutorial")
+    SetTextFont(id_texto_tutorial, id_fonte_jogo)
+    SetTextSize(id_texto_tutorial, 30)
+    SetTextColor(id_texto_tutorial, 255, 171, 64, 255)
+    SetTextPosition(id_texto_tutorial, GetVirtualWidth()/2 - GetTextTotalWidth(id_texto_tutorial)/2, 620)
 
-// Score com fonte diferente pq a fonte nao tem numero
     id_texto_score_label = CreateText("Score: ")
     SetTextFont(id_texto_score_label, id_fonte_jogo)
     SetTextSize(id_texto_score_label, 25)
@@ -158,13 +166,25 @@ load_assets:
     SetTextPosition(id_texto_continuar, GetVirtualWidth()/2 - GetTextTotalWidth(id_texto_continuar)/2, 450)
     SetTextVisible(id_texto_continuar, 0)
     
-// Texto separado para o placar final
     id_texto_score_final = CreateText("")
     SetTextSize(id_texto_score_final, 30)
     SetTextColor(id_texto_score_final, 255, 200, 100, 255)
     SetTextVisible(id_texto_score_final, 0)
+    
+    id_texto_venceu = CreateText("Parabens")
+	SetTextFont(id_texto_venceu, id_fonte_jogo)
+	SetTextSize(id_texto_venceu, 80)
+	SetTextColor(id_texto_venceu, 255, 200, 100, 255)
+	SetTextPosition(id_texto_venceu, GetVirtualWidth()/2 - GetTextTotalWidth(id_texto_venceu)/2, 300)
+	SetTextVisible(id_texto_venceu, 0)
+	
+	id_texto_fraco = CreateText("Tente novamente")
+	SetTextFont(id_texto_fraco, id_fonte_jogo)
+	SetTextSize(id_texto_fraco, 80)
+	SetTextColor(id_texto_fraco, 255, 200, 100, 255)
+	SetTextPosition(id_texto_fraco, GetVirtualWidth()/2 - GetTextTotalWidth(id_texto_fraco)/2, 300)
+	SetTextVisible(id_texto_fraco, 0)
 return
-
 
 //INICIA O JOGO
 start_game:
@@ -174,7 +194,9 @@ start_game:
     SetTextVisible(id_texto_sair, 0)
     SetTextVisible(id_texto_gameover, 0)
     SetTextVisible(id_texto_continuar, 0)
-    SetTextVisible(id_texto_score_final, 0) // Esconde o score final
+    SetTextVisible(id_texto_score_final, 0)
+	SetTextVisible(id_texto_tutorial, 0)
+	SetSpriteVisible(id_logo_tutorial, 0)
 
 // Redefine o score para o estado de "jogando"
     score = 0
@@ -183,7 +205,7 @@ start_game:
     SetTextVisible(id_texto_score_value, 1)
     
 // Posiciona o girassol no centro da tela
-    SetSpritePosition(id_girassol, GetVirtualWidth()/2 - GetSpriteWidth(id_girassol)/2, GetVirtualHeight()/2 - GetSpriteHeight(id_girassol)/2)
+    SetSpritePosition(id_girassol, GetVirtualWidth()/2 - GetSpriteWidth(id_girassol)/2, 900 - GetSpriteHeight(id_girassol)/2)
     SetSpriteVisible(id_girassol, 1)
 
 // Desativa todas as abelhas e sementes antes de começar
@@ -200,37 +222,32 @@ start_game:
     gosub spawn_bee
     gosub spawn_bee
     gosub spawn_bee
+    gosub spawn_bee
 
 // Muda o estado do jogo para "jogando"
     game_state = 1
 return
 
-
-// --- MENU ---
 logic_menu:
-    rem // Mostra os elementos do menu
+    // Mostra os elementos do menu
     SetSpriteVisible(id_logo_titulo, 1)
     SetTextVisible(id_texto_jogar, 1)
     SetTextVisible(id_texto_sair, 1)
-    
     if GetPointerPressed()
         if GetTextHitTest(id_texto_jogar, GetPointerX(), GetPointerY()) then gosub start_game
         if GetTextHitTest(id_texto_sair, GetPointerX(), GetPointerY()) then end
     endif
 return
 
-
-// --- GAME OVER---
 logic_gameover:
     if GetPointerPressed()
+		if GetTextHitTest(id_texto_sair, GetPointerX(), GetPointerY()) then end
         if GetTextHitTest(id_texto_continuar, GetPointerX(), GetPointerY())
-            gosub start_game
-        endif
+            gosub start_game  
+            endif      
     endif
 return
 
-
-// --- GAMEPLAY ---
 logic_gameplay:
 // Faz o Girassol virar para a esquerda ou direita em direção ao mouse
     girassol_x = GetSpriteX(id_girassol) + GetSpriteWidth(id_girassol)/2
@@ -247,14 +264,13 @@ logic_gameplay:
 SetPhysicsDebugOn()
 // Atualiza a posição das sementes e abelhas
     gosub update_sementes
-    gosub update_bees
+    gosub update_abelhas
     
 // Verifica colisões
-    gosub check_collisions
+    gosub colisoes
 return
 
 
-// --- ATIRAR ---
 shoot_semente:
     for i = 0 to 24
         if all_sementes[i].active = 0
@@ -266,13 +282,13 @@ shoot_semente:
             player_y = GetSpriteY(id_girassol) + GetSpriteHeight(id_girassol)/2
             SetSpritePosition(semente_id, player_x - GetSpriteWidth(semente_id)/2, player_y - GetSpriteHeight(semente_id)/2)
             
-// Calcula o vetor de direção normalizado para o mouse
+// Calcula o vetor de direção para o mouse
             dir_x# = GetPointerX() - player_x
             dir_y# = GetPointerY() - player_y
             distance# = Sqrt(dir_x#*dir_x# + dir_y#*dir_y#)
             
             if distance# > 0
-                speed# = 8.0
+                speed# = 10.0
                 all_sementes[i].vx = (dir_x# / distance#) * speed#
                 all_sementes[i].vy = (dir_y# / distance#) * speed#
             endif
@@ -283,8 +299,6 @@ shoot_semente:
     next i
 return
 
-
-// --- SEMENTES ---
 update_sementes:
     for i = 0 to 24
         if all_sementes[i].active = 1
@@ -306,17 +320,16 @@ spawn_bee:
         if all_bees[i].active = 0
             all_bees[i].active = 1
             id = all_bees[i].id
-// Escolhe um lado aleatório para surgir (0=topo, 1=esquerda, 2=direita)
             side = Random(0, 2)
             if side = 0 // Topo
                 spawn_x = Random(0, GetVirtualWidth())
                 spawn_y = -50
             elseif side = 1 // Esquerda
                 spawn_x = -50
-                spawn_y = Random(0, GetVirtualHeight())
+                spawn_y = Random(0, 800)
             else // Direita
                 spawn_x = GetVirtualWidth() + 50
-                spawn_y = Random(0, GetVirtualHeight())
+                spawn_y = Random(0, 800)
             endif
             
             SetSpritePosition(id, spawn_x, spawn_y)
@@ -328,14 +341,14 @@ return
 
 
 // --- ATUALIZAR AS ABELHAS ---
-update_bees:
+update_abelhas:
     for i = 0 to 14
         if all_bees[i].active = 1
             id = all_bees[i].id
             SetSpriteShape(id,3)
-// Faz a abelha voar em direção ao girassol (centro da tela)
+// A abelha ta voando pro meio amem
             girassol_x = GetVirtualWidth()/2
-            girassol_y = GetVirtualHeight()/2
+            girassol_y = 900
             bee_x = GetSpriteX(id) + GetSpriteWidth(id)/2
             bee_y = GetSpriteY(id) + GetSpriteHeight(id)/2
 
@@ -343,19 +356,17 @@ update_bees:
             dir_y# = girassol_y - bee_y
             distance# = Sqrt(dir_x#*dir_x# + dir_y#*dir_y#)
             
-            speed# = 1.0 + (score / 20.0) // Velocidade aumenta com o score
+            speed# = 0.5 + (score / 20.0) // vai dificultando
             
             if distance# > 0
                 move_x# = (dir_x# / distance#) * speed#
                 move_y# = (dir_y# / distance#) * speed#
                 SetSpritePosition(id, GetSpriteX(id) + move_x#, GetSpriteY(id) + move_y#)
                 
-// Vira a abelha para a esquerda ou direita em vez de rotacionar
+// A abelha vai ficar olhando pro meio e nao preciso usar 2 sprite diferente
                 if move_x# < 0
-                    // Se está se movendo para a esquerda, vira o sprite horizontalmente
                     SetSpriteFlip(id, 1, 0)
                 else
-                    // Se está se movendo para a direita (ou reto para baixo), mantém o sprite normal
                     SetSpriteFlip(id, 0, 0)
                 endif
             endif
@@ -365,7 +376,7 @@ return
 
 
 // --- VERIFICAR COLISÕES ---
-check_collisions:
+colisoes:
     for s = 0 to 24
         if all_sementes[s].active = 1
             for b = 0 to 14
@@ -389,7 +400,7 @@ check_collisions:
     for b = 0 to 14
         if all_bees[b].active = 1
             if GetSpriteCollision(all_bees[b].id, id_girassol)
-                gosub handle_game_over
+                gosub game_over
             endif
         endif
     next b
@@ -397,8 +408,8 @@ return
 
 
 // --- FIM DE JOGO ---
-handle_game_over:
-// Esconde todos os elementos do jogo
+game_over:
+// Esconde o jogo e menu de gameover
     SetSpriteVisible(id_girassol, 0)
     SetTextVisible(id_texto_score_label, 0)
     SetTextVisible(id_texto_score_value, 0)
@@ -407,18 +418,22 @@ handle_game_over:
     
     if score > high_score then high_score = score
     
-// Tela de Game Over
+// Tela Game Over
     SetSpriteVisible(id_logo_titulo, 0)
     SetTextVisible(id_texto_jogar, 0)
-    SetTextVisible(id_texto_sair, 0)
+    SetTextVisible(id_texto_sair, 1)
     SetTextVisible(id_texto_gameover, 1)
     SetTextVisible(id_texto_continuar, 1)
     
-// Score final
     final_score_text$ = "Seu score: " + str(score) + " | Recorde: " + str(high_score)
     SetTextString(id_texto_score_final, final_score_text$)
     SetTextPosition(id_texto_score_final, GetVirtualWidth()/2 - GetTextTotalWidth(id_texto_score_final)/2, 220)
     SetTextVisible(id_texto_score_final, 1)
+    if score >= 100
+		SetTextVisible(id_texto_venceu, 1)
+	else
+		SetTextVisible(id_texto_fraco, 1)
+	endif
     
     game_state = 2
 return
