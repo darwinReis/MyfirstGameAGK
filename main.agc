@@ -162,7 +162,7 @@ load_assets:
     id_texto_continuar = CreateText("Clique para tentar novamente")
     SetTextFont(id_texto_continuar, id_fonte_jogo)
     SetTextSize(id_texto_continuar, 30)
-    SetTextColor(id_texto_continuar, 255, 200, 100, 255)
+    SetTextColor(id_texto_continuar, 255, 171, 64, 255)
     SetTextPosition(id_texto_continuar, GetVirtualWidth()/2 - GetTextTotalWidth(id_texto_continuar)/2, 450)
     SetTextVisible(id_texto_continuar, 0)
     
@@ -173,15 +173,15 @@ load_assets:
     
     id_texto_venceu = CreateText("Parabens")
 	SetTextFont(id_texto_venceu, id_fonte_jogo)
-	SetTextSize(id_texto_venceu, 80)
-	SetTextColor(id_texto_venceu, 255, 200, 100, 255)
+	SetTextSize(id_texto_venceu, 60)
+	SetTextColor(id_texto_venceu, 255, 171, 64, 255)
 	SetTextPosition(id_texto_venceu, GetVirtualWidth()/2 - GetTextTotalWidth(id_texto_venceu)/2, 300)
 	SetTextVisible(id_texto_venceu, 0)
 	
 	id_texto_fraco = CreateText("Tente novamente")
 	SetTextFont(id_texto_fraco, id_fonte_jogo)
-	SetTextSize(id_texto_fraco, 80)
-	SetTextColor(id_texto_fraco, 255, 200, 100, 255)
+	SetTextSize(id_texto_fraco, 60)
+	SetTextColor(id_texto_fraco, 255, 171, 64, 255)
 	SetTextPosition(id_texto_fraco, GetVirtualWidth()/2 - GetTextTotalWidth(id_texto_fraco)/2, 300)
 	SetTextVisible(id_texto_fraco, 0)
 return
@@ -219,10 +219,10 @@ start_game:
     next i
 
 // Ativa as primeiras abelhas
-    gosub spawn_bee
-    gosub spawn_bee
-    gosub spawn_bee
-    gosub spawn_bee
+    gosub spawn_abelha
+    gosub spawn_abelha
+    gosub spawn_abelha
+    gosub spawn_abelha
 
 // Muda o estado do jogo para "jogando"
     game_state = 1
@@ -243,7 +243,9 @@ logic_gameover:
     if GetPointerPressed()
 		if GetTextHitTest(id_texto_sair, GetPointerX(), GetPointerY()) then end
         if GetTextHitTest(id_texto_continuar, GetPointerX(), GetPointerY())
-            gosub start_game  
+            gosub start_game 
+            SetTextVisible(id_texto_venceu, 0)
+			SetTextVisible(id_texto_fraco, 0)
             endif      
     endif
 return
@@ -259,9 +261,8 @@ logic_gameplay:
 	SetSpriteShape(id_girassol,3)
 // Atirar com clique do mouse
     if GetPointerPressed()
-        gosub shoot_semente
+        gosub atirar_semente
     endif
-SetPhysicsDebugOn()
 // Atualiza a posição das sementes e abelhas
     gosub update_sementes
     gosub update_abelhas
@@ -271,7 +272,7 @@ SetPhysicsDebugOn()
 return
 
 
-shoot_semente:
+atirar_semente:
     for i = 0 to 24
         if all_sementes[i].active = 0
             all_sementes[i].active = 1
@@ -315,7 +316,7 @@ return
 
 
 // --- NOVA ABELHA ---
-spawn_bee:
+spawn_abelha:
     for i = 0 to 14
         if all_bees[i].active = 0
             all_bees[i].active = 1
@@ -389,7 +390,7 @@ colisoes:
                         SetSpriteVisible(all_bees[b].id, 0)
                         score = score + 1
                         SetTextString(id_texto_score_value, str(score))
-                        gosub spawn_bee
+                        gosub spawn_abelha
                     endif
                 endif
             next b
