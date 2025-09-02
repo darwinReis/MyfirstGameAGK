@@ -2,7 +2,7 @@
 SetErrorMode(2)
 
 // Propriedades da janela
-SetWindowTitle( "Girassol Defensor" )
+SetWindowTitle( "Sunflower Defense" )
 SetWindowSize( 1024, 1080, 0 )
 SetWindowAllowResize( 0 )
 
